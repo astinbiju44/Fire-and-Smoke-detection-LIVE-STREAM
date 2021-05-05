@@ -1,5 +1,4 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator,img_to_array
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical,plot_model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization,Conv2D,MaxPooling2D,Activation,Flatten,Dropout,Dense
@@ -69,47 +68,54 @@ aug=ImageDataGenerator(rotation_range=25,width_shift_range=0.1,
                        horizontal_flip=True,fill_mode="nearest")
 
 
-#defining model
-def buildmodel(width,height,depth,classes):
-    model=Sequential()
-    inputshape=(height,width,depth)
-    changeDim=-1
 
-    if k.image_data_format()=="channels_first": #return a string either 'Channels first' or 'chancels last'
-        inputshape=(depth,height,width)
-        changeDim = 1
+model = Sequential()
+model.add(Conv2D(32, (3, 3), input_shape=(height,width,channels),activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3),activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Flatten())
+model.add(Dense(units=150, activation='relu'))
+model.add(Dropout(0.25))
+model.add(Dense(units=3, activation='softmax'))
 
-    model.add(Conv2D(filters=32, kernel_size=(3, 3),padding="same", activation='relu', input_shape=inputshape))
-    model.add(BatchNormalization(axis=changeDim))
-    model.add((MaxPooling2D(pool_size=(3, 3))))
-    model.add(Dropout(rate=0.25))
 
-    model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same",activation='relu'))
-    model.add(BatchNormalization(axis=changeDim))
+# Compilation of the model
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation='relu'))
-    model.add(BatchNormalization(axis=changeDim))
-    model.add((MaxPooling2D(pool_size=(2, 2))))
-    model.add(Dropout(rate=0.25))
 
-    model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation='relu'))
-    model.add(BatchNormalization(axis=changeDim))
+history=model.fit(aug.flow(trainx,trainy,batch_size=32),
+                  validation_data=(testx,testy),
+                  steps_per_epoch=len(trainx)//32,
+                  epochs=100,verbose=1)
 
-    model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation='relu'))
-    model.add(BatchNormalization(axis=changeDim))
-    model.add((MaxPooling2D(pool_size=(2, 2))))
-    model.add(Dropout(rate=0.25))
+model.save('detection.h5')
 
-    model.add(Flatten())
-    model.add(Dense(1024, activation='relu'))
-    model.add(BatchNormalization())
-    model.add(Dropout(rate=0.5))
 
-    model.add(Dense((classes), activation='softmax'))
+plt.figure(0)
+plt.plot(history.history['accuracy'], label='training accuracy')
+plt.plot(history.history['val_accuracy'], label='val accuracy')
+plt.title('Accuracy')
+plt.xlabel('epochs')
+plt.ylabel('accuracy')
+plt.legend()
+plt.savefig('Accuracy.png')
 
-    return model
+plt.figure(1)
+plt.plot(history.history['loss'], label='training loss')
+plt.plot(history.history['val_loss'], label='val loss')
+plt.title('Loss')
+plt.xlabel('epochs')
+plt.ylabel('loss')
+plt.legend()
+plt.savefig('Loss.png')
 
-model=buildmodel(width=width,height=height,depth=channels,classes=3)
+print("Saved Model & Graph to disk")
 
 
 
