@@ -53,10 +53,15 @@ for img in imagefiles:
     labels.append([label]) #[[0],[2],[1],......]
 
 
-
 #data preprocessing
 data=np.array(data,dtype="float")/255.0  #it will convert into array of values between 0 & 1
 labels=np.array(labels)
+
+
+#spliting dataset into train and test
+(trainx,testx,trainy,testy)=train_test_split(data,labels,test_size=0.2,random_state=42)
+trainy=to_categorical(trainy,num_classes=3)
+testy=to_categorical(testy,num_classes=3)
 
 
 
