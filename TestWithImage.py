@@ -17,7 +17,7 @@ def classify(img_file):
     maxx = np.amax(arr)
     max_prob = arr.argmax(axis=0)
     max_prob = max_prob + 1
-    classes=["netral","fire","smoke"]
+    classes=["Neutral","Fire","Smoke"]
     result = classes[max_prob - 1]
     print(img_name,result)
 
