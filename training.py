@@ -54,6 +54,11 @@ for img in imagefiles:
 
 
 
+#data preprocessing
+data=np.array(data,dtype="float")/255.0  #it will convert into array of values between 0 & 1
+labels=np.array(labels)
+
+
 
 
 
